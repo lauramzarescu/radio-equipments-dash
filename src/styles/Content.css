@@ -1,15 +1,16 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap");
 
-.sidebar-paper {
+.content-paper {
   height: 100%;
+  width: 100%;
+  box-shadow: none !important;
 }
 
 .MuiPaper-rounded {
   border-radius: 15px !important;
 }
 
-/* BUTTONS */
-
-.dashboard-button {
-  margin-top: 20px;
+.total-equipments {
+  height: 25vh;
+  /* width: 30vh; */
 }

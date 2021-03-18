@@ -5,7 +5,6 @@
   padding: 0;
   border: 0;
   vertical-align: baseline;
-  overflow: hidden;
 }
 
 html {
@@ -44,7 +43,7 @@ p {
   height: 32px;
   width: calc(100% - 2px);
   /*Compensate for body 1px border*/
-  background: #254053;
+  background: #f7f6f4;
   color: #FFF;
   padding: 4px;
 }
@@ -167,26 +166,20 @@ p {
   display: none;
 }
 
-.main-container {
-  flex-grow: 1;
-  margin: 0;
+
+/* APP STYLE */
+
+.wrapper {
+  padding-top: 25px;
   height: 100vh;
-  grid-template-rows: 50px 50px 1fr;
 }
 
-.paper {
-  background-color: #254053;
-  width: 100px;
-  height: 140px;
+.container {
+  height: 100%;
 }
 
-.sidebar-container {
-  margin-top: 30px;
-}
-
-.button-group {
-  color: white !important;
-  margin-top: 25%;
-  text-decoration: none;
-  justify-content: flex-start;
+.container-split {
+  height: 100%;
+  z-index: 1;
+  padding: 13px;
 }
