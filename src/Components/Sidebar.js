@@ -1,17 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Sidebar.css";
 
 import ColorTheme from "../Theme/ThemeProvider";
-import {
-  withStyles,
-  makeStyles,
-} from "@material-ui/core/styles";
+import { withStyles, makeStyles } from "@material-ui/core/styles";
 
-import {
-  Paper,
-  Button,
-  IconButton,
-} from "@material-ui/core";
+import { Paper, Button, IconButton } from "@material-ui/core";
 
 import DashboardOutlinedIcon from "@material-ui/icons/DashboardOutlined";
 import RadioOutlinedIcon from "@material-ui/icons/RadioOutlined";
@@ -54,6 +47,8 @@ const useStyles = makeStyles((theme) => ({
 export const Sidebar = () => {
   const classes = useStyles();
 
+  const [active, setActive] = useState([true, false, false]);
+
   function SidebarButtons() {
     const buttons = [
       {
@@ -70,6 +65,13 @@ export const Sidebar = () => {
       },
     ];
 
+    function persistentFocusButton(index) {
+        const activeArr = active.map((val, i) => val ? !val : val);
+        activeArr[index] = !activeArr[index];
+        setActive([...activeArr]);
+        console.log(activeArr)
+      }
+
     const listButtons = buttons.map((button, index) => (
       <ColorButton
         key={index}
@@ -82,14 +84,6 @@ export const Sidebar = () => {
     ));
 
     return listButtons;
-  }
-
-  const [active, setActive] = useState([true, false, false]);
-
-  function persistentFocusButton(index) {
-    setActive(!active[index]);
-    console.log(active);
-    console.log(index, active[index]);
   }
 
   return (
