@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "../styles/Sidebar.css";
 
 import ColorTheme from "../Theme/ThemeProvider";
@@ -10,6 +10,9 @@ import DashboardOutlinedIcon from "@material-ui/icons/DashboardOutlined";
 import RadioOutlinedIcon from "@material-ui/icons/RadioOutlined";
 import PublishOutlinedIcon from "@material-ui/icons/PublishOutlined";
 import AssessmentOutlinedIcon from "@material-ui/icons/AssessmentOutlined";
+
+import { Switch, Route, Link } from "react-router-dom";
+import routes from "../Actions/routes";
 
 const ColorButton = withStyles((theme) => ({
   root: {
@@ -66,21 +69,22 @@ export const Sidebar = () => {
     ];
 
     function persistentFocusButton(index) {
-        const activeArr = active.map((val, i) => val ? !val : val);
-        activeArr[index] = !activeArr[index];
-        setActive([...activeArr]);
-        console.log(activeArr)
-      }
+      const activeArr = active.map((val, i) => (val ? !val : val));
+      activeArr[index] = !activeArr[index];
+      setActive([...activeArr]);
+    }
 
     const listButtons = buttons.map((button, index) => (
-      <ColorButton
-        key={index}
-        className={active[index] ? classes.activeButton : null}
-        startIcon={button.icon}
-        onClick={() => persistentFocusButton(index)}
-      >
-        {button.name}
-      </ColorButton>
+      <Link to={routes[index].path}>
+        <ColorButton
+          key={index}
+          className={active[index] ? classes.activeButton : null}
+          startIcon={button.icon}
+          onClick={() => persistentFocusButton(index)}
+        >
+          {button.name}
+        </ColorButton>
+      </Link>
     ));
 
     return listButtons;
