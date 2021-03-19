@@ -75,7 +75,7 @@ export const Sidebar = () => {
     }
 
     const listButtons = buttons.map((button, index) => (
-      <Link to={routes[index].path}>
+      <Link to={routes[index].path} style={{ textDecoration: 'none' }}>
         <ColorButton
           key={index}
           className={active[index] ? classes.activeButton : null}
