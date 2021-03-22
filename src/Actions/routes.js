@@ -1,6 +1,6 @@
 import { Dashboard } from "../Pages/Dashboard.js";
-import { Equipments } from "../Pages/Equipments.js";
 import { UploadData } from "../Pages/UploadData.js";
+import { Equipments } from "../Pages/Equipments.js";
 
 const routes = [
   {

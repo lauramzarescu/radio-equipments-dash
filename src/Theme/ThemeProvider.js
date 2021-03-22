@@ -10,6 +10,9 @@ const ColorTheme = createMuiTheme({
       activeBorder: "#fd7a38",
       activeButton:
         "linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(255,248,244,1) 42%, rgba(255,239,232,1) 100%);",
+      successButton: "#82c27c",
+      neutralButton: "#0078ff",
+      errorButton: "#ff726a"
     },
     secondary: {
       main: "#f7f6f4",

@@ -1,150 +1,154 @@
-import React, { useState } from "react";
+import React from "react";
 
-import Button from "@material-ui/core/Button";
 import { Grid } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 
-import Paper from "@material-ui/core/Paper";
-import { DataGrid } from "@material-ui/data-grid";
-
-import * as XLSX from "xlsx";
-
 import ColorTheme from "../Theme/ThemeProvider";
+
+import Stepper from "@material-ui/core/Stepper";
+import Step from "@material-ui/core/Step";
+import StepLabel from "@material-ui/core/StepLabel";
+import StepContent from "@material-ui/core/StepContent";
+import Button from "@material-ui/core/Button";
+import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 
 const useStyles = makeStyles((theme) => ({
   gridContainer: {
     height: "100%",
   },
-  upperContainer: {
-    height: "7%",
+  buttonBack: {
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    color: ColorTheme.palette.primary.neutralButton,
+    borderColor: ColorTheme.palette.primary.neutralButton,
+    fontWeight: "bold",
   },
-  lowerContainer: {
-    height: "93%",
+  buttonNext: {
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    color: ColorTheme.palette.primary.successButton,
+    borderColor: ColorTheme.palette.primary.successButton,
+    fontWeight: "bold",
+  },
+  buttonReset: {
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    color: ColorTheme.palette.primary.errorButton,
+    borderColor: ColorTheme.palette.primary.errorButton,
+    fontWeight: "bold",
+  },
+  actionsContainer: {
+    marginBottom: theme.spacing(2),
+  },
+  resetContainer: {
+    padding: theme.spacing(3),
+  },
+  stepIconCustom: {
+    color: ColorTheme.palette.primary.activeBorder + '!important',
   },
 }));
+
+function getSteps() {
+  return ["Select campaign settings", "Create an ad group", "Create an ad"];
+}
+
+function getStepContent(step) {
+  switch (step) {
+    case 0:
+      return `For each ad campaign that you create, you can control how much
+              you're willing to spend on clicks and conversions, which networks
+              and geographical locations you want your ads to show on, and more.`;
+    case 1:
+      return "An ad group contains one or more ads which target a shared set of keywords.";
+    case 2:
+      return `Try out different ad text to see what brings in the most customers,
+              and learn how to enhance your ads using features like ad extensions.
+              If you run into any problems with your ads, find out how to tell if
+              they're running and how to resolve approval issues.`;
+    default:
+      return "Unknown step";
+  }
+}
 
 export const Equipments = () => {
   const classes = useStyles();
 
-  const [rows, setRows] = useState([]);
-  const [columns, setColumns] = useState([
-    {
-      field: "ora",
-      headerName: "Ora",
-      width: 100,
-      sortable: true,
-    },
-    {
-      field: "frecventa",
-      headerName: "Frecventa (MHz)",
-      width: 200,
-    },
-    {
-      field: "nr_mas",
-      headerName: "Nr. de masuratori",
-      width: 200,
-    },
-    {
-      field: "azimut",
-      headerName: "Azimut",
-      width: 130,
-    },
-    {
-      field: "confidenta",
-      headerName: "Confidenta (0-99)",
-      width: 200,
-    },
-    {
-      field: "niv_mas",
-      headerName: "Nivel masurat (-10 pana la -130)",
-      width: 280,
-    },
-    {
-      field: "lat_n",
-      headerName: "Latitudine N",
-      width: 160,
-    },
-    {
-      field: "lat_e",
-      headerName: "Latitudine E",
-      width: 160,
-    },
-  ]);
+  const [activeStep, setActiveStep] = React.useState(0);
+  const steps = getSteps();
 
-  function setFileUploaded(data) {
-    var counter = 0;
-    var data_rows = [];
+  const handleNext = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
 
-    for (let i = 1; i < data.length; i++) {
-      data_rows.push({
-        id: counter,
-      });
-      for (let j = 0; j < data[i].length; j++) {
-        for (let k = 0; k < data[i].length; k++) {
-          data_rows[counter][columns[j].field] = data[i][j];
-        }
-      }
-      counter++;
-    }
+  const handleBack = () => {
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
 
-    setRows(data_rows);
-    console.log(rows);
-  }
-
-  function handleUpload(e) {
-    e.preventDefault();
-
-    var files = e.target.files;
-    var f = files[0];
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      var data = e.target.result;
-      let readedData = XLSX.read(data, { type: "binary" });
-      const wsname = readedData.SheetNames[0];
-      const ws = readedData.Sheets[wsname];
-
-      const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
-      console.log(dataParse);
-      setFileUploaded(dataParse);
-    };
-    reader.readAsBinaryString(f);
-  }
+  const handleReset = () => {
+    setActiveStep(0);
+  };
 
   return (
     <>
       <Grid container className={classes.gridContainer}>
-        <Grid item xs={12} className={classes.upperContainer}>
-          <Button
-            // onClick={() => handleUpload}
-            variant="contained"
-            component="label"
-          >
-            Upload File
-            <input type="file" hidden onChange={handleUpload} />
-          </Button>
-        </Grid>
-        <Grid
-          item
-          xs={12}
-          className={classes.lowerContainer}
-          alignItems="flex-end"
+        <Paper
+          style={{
+            backgroundColor: ColorTheme.palette.primary.main,
+            height: "100%",
+            width: "100%",
+          }}
+          elevation={2}
         >
-          <Paper
-            style={{
-              backgroundColor: ColorTheme.palette.primary.main,
-              height: "100%",
-              width: "100%",
-            }}
-            elevation={2}
-          >
-            <DataGrid
-              rows={rows}
-              columns={columns}
-              pageSize={15}
-              checkboxSelection
-            />
-          </Paper>
-        </Grid>
+          <Stepper activeStep={activeStep} orientation="vertical">
+            {steps.map((label, index) => (
+              <Step key={label}>
+                <StepLabel
+                  StepIconProps={{
+                    classes: {
+                      completed: classes.stepIconCustom,
+                      active: classes.stepIconCustom,
+                      root: classes.stepIconCustom,
+                    },
+                  }}
+                >
+                  {label}
+                </StepLabel>
+                <StepContent>
+                  <Typography>{getStepContent(index)}</Typography>
+                  <div className={classes.actionsContainer}>
+                    <div>
+                      <Button
+                        disabled={activeStep === 0}
+                        onClick={handleBack}
+                        className={classes.buttonBack}
+                      >
+                        Back
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={handleNext}
+                        className={classes.buttonNext}
+                      >
+                        {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                      </Button>
+                    </div>
+                  </div>
+                </StepContent>
+              </Step>
+            ))}
+          </Stepper>
+          {activeStep === steps.length && (
+            <Paper square elevation={0} className={classes.resetContainer}>
+              <Typography>
+                All steps completed - you&apos;re finished
+              </Typography>
+              <Button onClick={handleReset} className={classes.buttonReset}>
+                Reset
+              </Button>
+            </Paper>
+          )}
+        </Paper>
       </Grid>
     </>
   );
