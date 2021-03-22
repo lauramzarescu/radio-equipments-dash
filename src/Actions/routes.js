@@ -10,10 +10,12 @@ const routes = [
   },
   {
     path: "/equipments",
+    exact: true,
     main: () => <Equipments />,
   },
   {
     path: "/upload",
+    exact: true,
     main: () => <UploadData />,
   },
 ];

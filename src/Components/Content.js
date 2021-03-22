@@ -4,8 +4,6 @@ import "../styles/Content.css";
 import { Switch, Route, Link } from "react-router-dom";
 import routes from "../Actions/routes";
 
-import { Paper, Grid } from "@material-ui/core";
-
 export const Content = () => {
   return (
     <>
