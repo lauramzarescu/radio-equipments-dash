@@ -29,7 +29,9 @@ import Dialog from "@material-ui/core/Dialog";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import Radio from "@material-ui/core/Radio";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
-import DoneIcon from '@material-ui/icons/Done';
+import DoneIcon from "@material-ui/icons/Done";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
 
 const useStyles = makeStyles((theme) => ({
   gridContainer: {
@@ -80,7 +82,7 @@ const useStyles = makeStyles((theme) => ({
     maxHeight: 435,
   },
   chipCompleted: {
-    backgroundColor: ColorTheme.palette.primary.successButton + '!important',
+    backgroundColor: ColorTheme.palette.primary.successButton + "!important",
     color: "#22521d",
   },
 }));
@@ -116,6 +118,10 @@ const CustomTextField = withStyles({
   },
 })(TextField);
 
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
+
 export const Equipments = () => {
   const classes = useStyles();
 
@@ -124,6 +130,7 @@ export const Equipments = () => {
   const [open, setOpen] = useState(false);
   const [value, setValue] = React.useState("int");
   const [activeChip, setActiveChip] = useState(0);
+  const [openAlert, setOpenAlert] = useState(false);
   // const [completedChip, setCompletedChip] = useState([]);
 
   const handleClose = (newValue) => {
@@ -132,15 +139,14 @@ export const Equipments = () => {
     if (newValue) {
       setValue(newValue);
       let new_chip_data = [...chipData];
-      console.log(new_chip_data);
-      console.log(activeChip);
+      // console.log(new_chip_data);
+      // console.log(activeChip);
       let activeChipIndex = new_chip_data.findIndex(
         (obj) => obj.key === activeChip
       );
-      console.log(new_chip_data[activeChipIndex]);
+      // console.log(new_chip_data[activeChipIndex]);
       new_chip_data[activeChipIndex].type = newValue;
-      console.log(new_chip_data[activeChipIndex]);
-      // setChipData(new_chip_data);
+      // console.log(new_chip_data[activeChipIndex]);
     }
   };
 
@@ -153,6 +159,14 @@ export const Equipments = () => {
   }, [chipData]);
 
   const handleNext = () => {
+    if (activeStep === 1) {
+      for (let i = 0; i < chipData.length; i++) {
+        if (!chipData[i].type) {
+          setOpenAlert(true);
+          return;
+        }
+      }
+    }
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
   };
 
@@ -168,6 +182,14 @@ export const Equipments = () => {
     setChipData((chips) =>
       chips.filter((chip) => chip.key !== chipToDelete.key)
     );
+  };
+
+  const handleAlertClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpenAlert(false);
   };
 
   function getSteps() {
@@ -193,12 +215,6 @@ export const Equipments = () => {
     const [value, setValue] = React.useState(valueProp);
 
     const radioGroupRef = React.useRef(null);
-
-    // React.useEffect(() => {
-    //   if (!open) {
-    //     setValue(valueProp);
-    //   }
-    // });
 
     const handleEntering = () => {
       if (radioGroupRef.current != null) {
@@ -290,11 +306,11 @@ export const Equipments = () => {
             {chipData.map((data) => {
               return (
                 <Chip
-                  classes={ data.type ? {root: classes.chipCompleted } : null}
+                  classes={data.type ? { root: classes.chipCompleted } : null}
                   style={{ margin: "0 10px 10px 0" }}
                   key={data.key}
                   avatar={!data.type ? <Avatar>{data.label[0]}</Avatar> : null}
-                  icon={ data.type ? <DoneIcon /> : null}
+                  icon={data.type ? <DoneIcon /> : null}
                   label={data.label}
                   onClick={handleClick(data)}
                   onDelete={handleDelete(data)}
@@ -398,6 +414,16 @@ export const Equipments = () => {
               </Button>
             </Paper>
           )}
+          <Snackbar
+            open={openAlert}
+            autoHideDuration={6000}
+            onClose={handleAlertClose}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert onClose={handleAlertClose} severity="error">
+              You need to choose a data type for each feature!
+            </Alert>
+          </Snackbar>
         </Paper>
       </Grid>
     </>
