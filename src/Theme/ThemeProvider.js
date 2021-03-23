@@ -22,6 +22,7 @@ const ColorTheme = createMuiTheme({
   typography: {
     fontFamily: "Montserrat, sans-serif",
   },
+  spacing: 8
 });
 
 export default ColorTheme;
