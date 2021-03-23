@@ -29,6 +29,7 @@ import Dialog from "@material-ui/core/Dialog";
 import RadioGroup from "@material-ui/core/RadioGroup";
 import Radio from "@material-ui/core/Radio";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import DoneIcon from '@material-ui/icons/Done';
 
 const useStyles = makeStyles((theme) => ({
   gridContainer: {
@@ -75,9 +76,13 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: "bold!important",
   },
   dialogPaper: {
-    width: '80%!important',
+    width: "80%!important",
     maxHeight: 435,
-  }
+  },
+  chipCompleted: {
+    backgroundColor: ColorTheme.palette.primary.successButton + '!important',
+    color: "#22521d",
+  },
 }));
 
 const options = [
@@ -117,17 +122,24 @@ export const Equipments = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [chipData, setChipData] = useState([]);
   const [open, setOpen] = useState(false);
-  const [value, setValue] = React.useState('int');
-  const [activeChip, setActiveChip] = useState(0)
+  const [value, setValue] = React.useState("int");
+  const [activeChip, setActiveChip] = useState(0);
+  // const [completedChip, setCompletedChip] = useState([]);
 
   const handleClose = (newValue) => {
     setOpen(false);
 
     if (newValue) {
       setValue(newValue);
-      // console.log(activeChip)
-      // console.log(new_chip_data[activeChip]);
-      // new_chip_data[activeChip].type = value;
+      let new_chip_data = [...chipData];
+      console.log(new_chip_data);
+      console.log(activeChip);
+      let activeChipIndex = new_chip_data.findIndex(
+        (obj) => obj.key === activeChip
+      );
+      console.log(new_chip_data[activeChipIndex]);
+      new_chip_data[activeChipIndex].type = newValue;
+      console.log(new_chip_data[activeChipIndex]);
       // setChipData(new_chip_data);
     }
   };
@@ -135,10 +147,9 @@ export const Equipments = () => {
   const steps = getSteps();
 
   React.useEffect(() => {
-    console.log(chipData);
+    // console.log(chipData);
     // let new_chip_data = [...chipData];
     // console.log(new_chip_data[activeChip]);
-
   }, [chipData]);
 
   const handleNext = () => {
@@ -183,11 +194,11 @@ export const Equipments = () => {
 
     const radioGroupRef = React.useRef(null);
 
-    React.useEffect(() => {
-      if (!open) {
-        setValue(valueProp);
-      }
-    }, [valueProp, open]);
+    // React.useEffect(() => {
+    //   if (!open) {
+    //     setValue(valueProp);
+    //   }
+    // });
 
     const handleEntering = () => {
       if (radioGroupRef.current != null) {
@@ -237,10 +248,19 @@ export const Equipments = () => {
           </RadioGroup>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={handleCancel} color="primary" className={classes.buttonReset}>
+          <Button
+            autoFocus
+            onClick={handleCancel}
+            color="primary"
+            className={classes.buttonReset}
+          >
             Cancel
           </Button>
-          <Button onClick={handleOk} color="primary" className={classes.buttonNext}>
+          <Button
+            onClick={handleOk}
+            color="primary"
+            className={classes.buttonNext}
+          >
             Ok
           </Button>
         </DialogActions>
@@ -270,9 +290,11 @@ export const Equipments = () => {
             {chipData.map((data) => {
               return (
                 <Chip
+                  classes={ data.type ? {root: classes.chipCompleted } : null}
                   style={{ margin: "0 10px 10px 0" }}
                   key={data.key}
-                  avatar={<Avatar>{data.label[0]}</Avatar>}
+                  avatar={!data.type ? <Avatar>{data.label[0]}</Avatar> : null}
+                  icon={ data.type ? <DoneIcon /> : null}
                   label={data.label}
                   onClick={handleClick(data)}
                   onDelete={handleDelete(data)}
@@ -309,7 +331,7 @@ export const Equipments = () => {
 
   const handleClick = (chip) => () => {
     setOpen(true);
-    setActiveChip(chip.key)
+    setActiveChip(chip.key);
   };
 
   return (
