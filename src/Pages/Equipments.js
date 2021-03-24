@@ -28,6 +28,7 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 import Radio from "@material-ui/core/Radio";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import DoneIcon from "@material-ui/icons/Done";
+import CheckIcon from "@material-ui/icons/Check";
 import ReorderOutlinedIcon from "@material-ui/icons/ReorderOutlined";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
@@ -37,6 +38,7 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
+import CircularProgress from "@material-ui/core/CircularProgress";
 
 const useStyles = makeStyles((theme) => ({
   gridContainer: {
@@ -94,9 +96,17 @@ const useStyles = makeStyles((theme) => ({
     width: "60%!important",
   },
   lisItemText: {
-    width: '100%',
-    flex: '0.5'
-  }
+    width: "100%",
+    flex: "0.5",
+  },
+  buttonProgress: {
+    color: ColorTheme.palette.primary.successButton,
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginTop: -12,
+    marginLeft: -12,
+  },
 }));
 
 const options = [
@@ -143,7 +153,27 @@ export const Equipments = () => {
   const [value, setValue] = React.useState("int");
   const [activeChip, setActiveChip] = useState(0);
   const [openAlert, setOpenAlert] = useState(false);
-  // const [completedChip, setCompletedChip] = useState([]);
+  const [loading, setLoading] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+
+  const timer = React.useRef();
+
+  React.useEffect(() => {
+    return () => {
+      clearTimeout(timer.current);
+    };
+  }, []);
+
+  const handleFinishProcess = () => {
+    if (!loading) {
+      setSuccess(false);
+      setLoading(true);
+      timer.current = window.setTimeout(() => {
+        setSuccess(true);
+        setLoading(false);
+      }, 2000);
+    }
+  };
 
   const handleClose = (newValue) => {
     setOpen(false);
@@ -425,11 +455,29 @@ export const Equipments = () => {
                       </Button>
                       <Button
                         variant="outlined"
-                        onClick={handleNext}
+                        onClick={
+                          activeStep === steps.length - 1
+                            ? handleFinishProcess
+                            : handleNext
+                        }
                         className={classes.buttonNext}
+                        disabled={
+                          activeStep === steps.length - 1 ? loading : false
+                        }
                       >
-                        {activeStep === steps.length - 1 ? "Finish" : "Next"}
+                        {success ? <CheckIcon /> : null}
+                        {activeStep === steps.length - 1 && success
+                          ? "Finished"
+                          : activeStep === steps.length - 1
+                          ? "Finish"
+                          : "Next"}
                       </Button>
+                      {loading && (
+                        <CircularProgress
+                          size={24}
+                          className={classes.buttonProgress}
+                        />
+                      )}
                     </div>
                   </div>
                 </StepContent>
