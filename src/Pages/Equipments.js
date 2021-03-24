@@ -155,6 +155,7 @@ export const Equipments = () => {
   const [openAlert, setOpenAlert] = useState(false);
   const [loading, setLoading] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
+  const [equipmentName, setEquipmentName] = useState(null);
 
   const timer = React.useRef();
 
@@ -181,24 +182,18 @@ export const Equipments = () => {
     if (newValue) {
       setValue(newValue);
       let new_chip_data = [...chipData];
-      // console.log(new_chip_data);
-      // console.log(activeChip);
       let activeChipIndex = new_chip_data.findIndex(
         (obj) => obj.key === activeChip
       );
-      // console.log(new_chip_data[activeChipIndex]);
       new_chip_data[activeChipIndex].type = newValue;
-      // console.log(new_chip_data[activeChipIndex]);
     }
   };
 
   const steps = getSteps();
 
   React.useEffect(() => {
-    // console.log(chipData);
-    // let new_chip_data = [...chipData];
-    // console.log(new_chip_data[activeChip]);
-  }, [chipData]);
+    console.log(equipmentName);
+  }, [equipmentName]);
 
   const handleNext = () => {
     if (activeStep === 1) {
@@ -242,9 +237,15 @@ export const Equipments = () => {
     ];
   }
 
+  function updateEquipmentName(e) {
+    setEquipmentName(e.target.value);
+  }
+
   function keyPress(e) {
     if (e.keyCode === 13) {
-      console.log(e.target.value);
+      if(e.target.value === ""){
+        return;
+      }
       setChipData((chipData) => [
         ...chipData,
         { key: chipData.length + 1, label: e.target.value, type: null },
@@ -331,9 +332,12 @@ export const Equipments = () => {
       case 0:
         return (
           <Grid item xs={12}>
-            <form noValidate autoComplete="off">
-              <CustomTextField id="standard-basic" label="Standard" />
-            </form>
+            <CustomTextField
+              id="standard-basic"
+              label="Standard"
+              value={equipmentName}
+              onChange={updateEquipmentName}
+            />
           </Grid>
         );
       case 1:
@@ -375,7 +379,7 @@ export const Equipments = () => {
       case 2:
         return (
           <Grid item xs={12}>
-            <List subheader={<ListSubheader>Features</ListSubheader>}>
+            <List subheader={<ListSubheader>Features - {chipData.length} in total</ListSubheader>}>
               {chipData.map((data) => {
                 return (
                   <ListItem divider className={classes.listItem}>
