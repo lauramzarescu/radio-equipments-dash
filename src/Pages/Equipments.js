@@ -14,14 +14,12 @@ import Step from "@material-ui/core/Step";
 import StepLabel from "@material-ui/core/StepLabel";
 import StepContent from "@material-ui/core/StepContent";
 import Button from "@material-ui/core/Button";
+import ButtonGroup from "@material-ui/core/ButtonGroup";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import TextField from "@material-ui/core/TextField";
 import Chip from "@material-ui/core/Chip";
 import Avatar from "@material-ui/core/Avatar";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
 import DialogTitle from "@material-ui/core/DialogTitle";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogActions from "@material-ui/core/DialogActions";
@@ -30,8 +28,15 @@ import RadioGroup from "@material-ui/core/RadioGroup";
 import Radio from "@material-ui/core/Radio";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import DoneIcon from "@material-ui/icons/Done";
+import ReorderOutlinedIcon from "@material-ui/icons/ReorderOutlined";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemIcon from "@material-ui/core/ListItemIcon";
+import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
+import ListItemText from "@material-ui/core/ListItemText";
+import ListSubheader from "@material-ui/core/ListSubheader";
 
 const useStyles = makeStyles((theme) => ({
   gridContainer: {
@@ -85,6 +90,13 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: ColorTheme.palette.primary.successButton + "!important",
     color: "#22521d",
   },
+  listItem: {
+    width: "60%!important",
+  },
+  lisItemText: {
+    width: '100%',
+    flex: '0.5'
+  }
 }));
 
 const options = [
@@ -196,7 +208,7 @@ export const Equipments = () => {
     return [
       "Set the name of the equipment",
       "Add the equipment's features",
-      "Select a type for every feature",
+      "Validate all features before creating a new equipment!",
     ];
   }
 
@@ -301,6 +313,7 @@ export const Equipments = () => {
               id="standard-basic"
               label="Standard"
               onKeyDown={keyPress}
+              inputProps={{ maxLength: 20 }}
             />
             <br></br>
             {chipData.map((data) => {
@@ -330,10 +343,29 @@ export const Equipments = () => {
           </Grid>
         );
       case 2:
-        return `Try out different ad text to see what brings in the most customers,
-                and learn how to enhance your ads using features like ad extensions.
-                If you run into any problems with your ads, find out how to tell if
-                they're running and how to resolve approval issues.`;
+        return (
+          <Grid item xs={12}>
+            <List subheader={<ListSubheader>Features</ListSubheader>}>
+              {chipData.map((data) => {
+                return (
+                  <ListItem divider className={classes.listItem}>
+                    <ListItemIcon>
+                      <ReorderOutlinedIcon />
+                    </ListItemIcon>
+                    <ListItemText
+                      className={classes.lisItemText}
+                      primary={data.label}
+                    />
+                    <ListItemText
+                      className={classes.lisItemText}
+                      primary={data.type}
+                    />
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Grid>
+        );
       default:
         return "Unknown step";
     }

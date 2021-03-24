@@ -21,6 +21,7 @@ const ColorTheme = createMuiTheme({
   },
   typography: {
     fontFamily: "Montserrat, sans-serif",
+    fontWeight: 'bold',
   },
   spacing: 8
 });
