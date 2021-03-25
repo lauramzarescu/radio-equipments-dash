@@ -6,6 +6,8 @@ import { makeStyles } from "@material-ui/core/styles";
 
 import Paper from "@material-ui/core/Paper";
 import { DataGrid } from "@material-ui/data-grid";
+import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
 
 import * as XLSX from "xlsx";
 
@@ -22,11 +24,22 @@ const useStyles = makeStyles((theme) => ({
     height: "93%",
   },
   btn: {
-    color: "#33cc33",
-    borderColor: "#33cc33",
-    borderRadius: "25px",
     fontWeight: "bold",
     lineHeight: "30px",
+  },
+  buttonBack: {
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    color: ColorTheme.palette.primary.neutralButton,
+    borderColor: ColorTheme.palette.primary.neutralButton,
+    fontWeight: "bold",
+  },
+  buttonNext: {
+    marginTop: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    color: ColorTheme.palette.primary.successButton,
+    borderColor: ColorTheme.palette.primary.successButton,
+    fontWeight: "bold",
   },
 }));
 
@@ -34,6 +47,8 @@ export const UploadData = () => {
   const classes = useStyles();
 
   const [rows, setRows] = useState([]);
+  const [openAlert, setOpenAlert] = useState(false);
+  const [equipmentSelected, setEquipmentSelected] = useState(false)
   const [columns, setColumns] = useState([
     {
       field: "ora",
@@ -78,6 +93,11 @@ export const UploadData = () => {
     },
   ]);
 
+  function selectEquipment() {
+    setEquipmentSelected(true);
+    setOpenAlert(false);
+  }
+
   function setFileUploaded(data) {
     var counter = 0;
     var data_rows = [];
@@ -95,11 +115,27 @@ export const UploadData = () => {
     }
 
     setRows(data_rows);
-    console.log(rows);
   }
 
+  function Alert(props) {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  }
+
+  const handleAlertClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+
+    setOpenAlert(false);
+  };
+
   function handleUpload(e) {
-    console.log("test");
+    if(!equipmentSelected) {
+      setOpenAlert(true);
+      e.target.value = '';
+      return;
+    }
+
     e.preventDefault();
 
     var files = e.target.files;
@@ -116,18 +152,32 @@ export const UploadData = () => {
       setFileUploaded(dataParse);
     };
     reader.readAsBinaryString(f);
+
+    e.target.value = '';
   }
 
   return (
     <>
       <Grid container className={classes.gridContainer}>
         <Grid item xs={12} className={classes.upperContainer}>
-          <Button variant="outlined" component="label" className={classes.btn}>
-            Upload File
+          <Button variant="outlined" className={classes.buttonBack} onClick={selectEquipment}>
+            Select equipment
+          </Button>
+          <Button
+            variant="outlined"
+            component="label"
+            className={classes.buttonBack}
+          >
+            Upload File from PC
             <input type="file" hidden onChange={handleUpload} />
           </Button>
-          <Button variant="outlined" className={classes.btn}>
-            Primary
+          <Button
+            variant="outlined"
+            component="label"
+            className={classes.buttonNext}
+            style={{ float: "right" }}
+          >
+            Upload File to database
           </Button>
         </Grid>
         <Grid
@@ -151,6 +201,16 @@ export const UploadData = () => {
               checkboxSelection
             />
           </Paper>
+          <Snackbar
+            open={openAlert}
+            autoHideDuration={6000}
+            onClose={handleAlertClose}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert onClose={handleAlertClose} severity="error">
+              You need to select an equipment first!
+            </Alert>
+          </Snackbar>
         </Grid>
       </Grid>
     </>

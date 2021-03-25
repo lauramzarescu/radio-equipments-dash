@@ -34,5 +34,4 @@ app.get("/", (req, res) => {
       res.send(rows);
     }
   });
-  //   res.json({ message: "Welcome to bezkoder application." });
 });

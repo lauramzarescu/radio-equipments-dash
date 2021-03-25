@@ -287,7 +287,7 @@ export const Equipments = () => {
         open={open}
         {...other}
       >
-        <DialogTitle id="confirmation-dialog-title">Phone Ringtone</DialogTitle>
+        <DialogTitle id="confirmation-dialog-title">Feature type</DialogTitle>
         <DialogContent dividers>
           <RadioGroup
             ref={radioGroupRef}
