@@ -8,6 +8,10 @@ import Paper from "@material-ui/core/Paper";
 import { DataGrid } from "@material-ui/data-grid";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
+import Select from "@material-ui/core/Select";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
 
 import * as XLSX from "xlsx";
 
@@ -41,6 +45,15 @@ const useStyles = makeStyles((theme) => ({
     borderColor: ColorTheme.palette.primary.successButton,
     fontWeight: "bold",
   },
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 200,
+    color: ColorTheme.palette.primary.neutralButton,
+    display: "none"
+  },
+  selectInput: {
+    borderColor: ColorTheme.palette.primary.neutralButton
+  },
 }));
 
 export const UploadData = () => {
@@ -48,7 +61,8 @@ export const UploadData = () => {
 
   const [rows, setRows] = useState([]);
   const [openAlert, setOpenAlert] = useState(false);
-  const [equipmentSelected, setEquipmentSelected] = useState(false)
+  const [openSelect, setOpenSelect] = React.useState(false);
+  const [equipmentSelected, setEquipmentSelected] = useState("");
   const [columns, setColumns] = useState([
     {
       field: "ora",
@@ -93,10 +107,12 @@ export const UploadData = () => {
     },
   ]);
 
-  function selectEquipment() {
-    setEquipmentSelected(true);
+  const hardcoded_equipments = ["Echipament 1", "Echipament 2", "Echipament 3"];
+
+  const selectEquipment = (event) => {
+    setEquipmentSelected(event.target.value);
     setOpenAlert(false);
-  }
+  };
 
   function setFileUploaded(data) {
     var counter = 0;
@@ -129,10 +145,18 @@ export const UploadData = () => {
     setOpenAlert(false);
   };
 
+  const handleSelectBoxClose = () => {
+    setOpenSelect(false);
+  };
+
+  const handleSelectBoxOpen = () => {
+    setOpenSelect(true);
+  };
+
   function handleUpload(e) {
-    if(!equipmentSelected) {
+    if (!equipmentSelected) {
       setOpenAlert(true);
-      e.target.value = '';
+      e.target.value = "";
       return;
     }
 
@@ -153,16 +177,58 @@ export const UploadData = () => {
     };
     reader.readAsBinaryString(f);
 
-    e.target.value = '';
+    e.target.value = "";
   }
 
   return (
     <>
       <Grid container className={classes.gridContainer}>
-        <Grid item xs={12} className={classes.upperContainer}>
-          <Button variant="outlined" className={classes.buttonBack} onClick={selectEquipment}>
-            Select equipment
-          </Button>
+        <Grid
+          item
+          xs={12}
+          className={classes.upperContainer}
+          color={ColorTheme.palette.primary.main}
+          justify="center"
+        >
+          {/* <Paper
+            style={{
+              backgroundColor: ColorTheme.palette.primary.main,
+              height: "100%",
+              width: "100%",
+            }}
+            elevation={2}
+          > */}
+          <Button
+              variant="outlined"
+              className={classes.buttonBack}
+              onClick={handleSelectBoxOpen}
+            >
+              {equipmentSelected || "Select equipment"}
+            </Button>
+            
+          <FormControl variant="outlined" className={classes.formControl}>
+            <InputLabel id="demo-simple-select-label" className={classes.selectInput}>Equipment</InputLabel>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select-outlined"
+              value={equipmentSelected}
+              onChange={selectEquipment}
+              open={openSelect}
+              onOpen={handleSelectBoxOpen}
+              onClose={handleSelectBoxClose}
+              label="equipment"
+              // outlined={classes.buttonBack}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {hardcoded_equipments.map((data, index) => {
+                return (
+                  <MenuItem key={index} value={data}>{data}</MenuItem>
+                )
+              })}
+            </Select>
+          </FormControl>
           <Button
             variant="outlined"
             component="label"
@@ -179,6 +245,7 @@ export const UploadData = () => {
           >
             Upload File to database
           </Button>
+          {/* </Paper> */}
         </Grid>
         <Grid
           item
