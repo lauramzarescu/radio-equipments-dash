@@ -13,6 +13,10 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 
+import AddIcon from '@material-ui/icons/Add';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import AllInboxIcon from '@material-ui/icons/AllInbox';
+
 import * as XLSX from "xlsx";
 
 import ColorTheme from "../Theme/ThemeProvider";
@@ -202,6 +206,7 @@ export const UploadData = () => {
               variant="outlined"
               className={classes.buttonBack}
               onClick={handleSelectBoxOpen}
+              startIcon={<AllInboxIcon />}
             >
               {equipmentSelected || "Select equipment"}
             </Button>
@@ -233,6 +238,7 @@ export const UploadData = () => {
             variant="outlined"
             component="label"
             className={classes.buttonBack}
+            startIcon={<AddIcon />}
           >
             Upload File from PC
             <input type="file" hidden onChange={handleUpload} />
@@ -242,6 +248,7 @@ export const UploadData = () => {
             component="label"
             className={classes.buttonNext}
             style={{ float: "right" }}
+            startIcon={<CloudUploadIcon />}
           >
             Upload File to database
           </Button>
