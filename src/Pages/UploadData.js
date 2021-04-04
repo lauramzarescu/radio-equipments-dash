@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import Button from "@material-ui/core/Button";
 import { Grid } from "@material-ui/core";
@@ -113,10 +113,24 @@ export const UploadData = () => {
 
   const hardcoded_equipments = ["Echipament 1", "Echipament 2", "Echipament 3"];
 
+  useEffect(() => {
+    const data = JSON.parse(sessionStorage.getItem('currentUploadFile'));
+    console.log(data)
+    if (data !== null) {
+      setFileUploaded(data);
+    }
+  }, []);
+
   const selectEquipment = (event) => {
     setEquipmentSelected(event.target.value);
     setOpenAlert(false);
   };
+
+  function UploadFileToDatabase() {
+    sessionStorage.removeItem('currentUploadFile');
+    setRows([]);
+    setColumns([]);
+  }
 
   function setFileUploaded(data) {
     var counter = 0;
@@ -177,6 +191,7 @@ export const UploadData = () => {
 
       const dataParse = XLSX.utils.sheet_to_json(ws, { header: 1 });
       console.log(dataParse);
+      sessionStorage.setItem("currentUploadFile", JSON.stringify(dataParse));
       setFileUploaded(dataParse);
     };
     reader.readAsBinaryString(f);
@@ -194,14 +209,6 @@ export const UploadData = () => {
           color={ColorTheme.palette.primary.main}
           justify="center"
         >
-          {/* <Paper
-            style={{
-              backgroundColor: ColorTheme.palette.primary.main,
-              height: "100%",
-              width: "100%",
-            }}
-            elevation={2}
-          > */}
           <Button
               variant="outlined"
               className={classes.buttonBack}
@@ -222,7 +229,6 @@ export const UploadData = () => {
               onOpen={handleSelectBoxOpen}
               onClose={handleSelectBoxClose}
               label="equipment"
-              // outlined={classes.buttonBack}
             >
               <MenuItem value="">
                 <em>None</em>
@@ -249,10 +255,10 @@ export const UploadData = () => {
             className={classes.buttonNext}
             style={{ float: "right" }}
             startIcon={<CloudUploadIcon />}
+            onClick={UploadFileToDatabase}
           >
             Upload File to database
           </Button>
-          {/* </Paper> */}
         </Grid>
         <Grid
           item
