@@ -10,6 +10,7 @@ import DashboardOutlinedIcon from "@material-ui/icons/DashboardOutlined";
 import RadioOutlinedIcon from "@material-ui/icons/RadioOutlined";
 import PublishOutlinedIcon from "@material-ui/icons/PublishOutlined";
 import AssessmentOutlinedIcon from "@material-ui/icons/AssessmentOutlined";
+import AvTimerOutlinedIcon from "@material-ui/icons/AvTimerOutlined";
 
 import { Switch, Route, Link } from "react-router-dom";
 import routes from "../Actions/routes";
@@ -59,6 +60,10 @@ export const Sidebar = () => {
         icon: <DashboardOutlinedIcon />,
       },
       {
+        name: "Activities",
+        icon: <AvTimerOutlinedIcon />,
+      },
+      {
         name: "Equipments",
         icon: <RadioOutlinedIcon />,
       },
@@ -75,7 +80,7 @@ export const Sidebar = () => {
     }
 
     const listButtons = buttons.map((button, index) => (
-      <Link to={routes[index].path} style={{ textDecoration: 'none' }}>
+      <Link to={routes[index].path} style={{ textDecoration: "none" }}>
         <ColorButton
           key={index}
           className={active[index] ? classes.activeButton : null}

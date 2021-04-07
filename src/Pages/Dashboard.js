@@ -103,7 +103,12 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     width: "50%",
     backgroundColor: ColorTheme.palette.secondary.main,
+    transition: 'width 0.3s',
     boxShadow: "none",
+    '&:hover': {
+      width: '100%',
+      transition: 'width 0.3s',
+    }
   },
   inputSearchBar: {
     marginLeft: theme.spacing(1),
@@ -197,7 +202,7 @@ export const Dashboard = () => {
       data: "2 hours ago",
     },
     {
-      label: "Average uploads per week",
+      label: "Number of activities",
       icon: getAnimationSettings(average),
       data: "14",
     },

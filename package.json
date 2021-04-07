@@ -20,6 +20,7 @@
     "express": "^4.17.1",
     "local-storage": "^2.0.0",
     "mysql2": "^2.2.5",
+    "randomcolor": "^0.6.2",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-json-csv": "^2.0.0",
