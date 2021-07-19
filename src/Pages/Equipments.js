@@ -39,6 +39,7 @@ import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
 import ListItemText from "@material-ui/core/ListItemText";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import CircularProgress from "@material-ui/core/CircularProgress";
+import { createEquipmentApi, getAllEquipmentsApi } from "./../api/models";
 
 const useStyles = makeStyles((theme) => ({
   gridContainer: {
@@ -156,6 +157,8 @@ export const Equipments = () => {
   const [loading, setLoading] = React.useState(false);
   const [success, setSuccess] = React.useState(false);
   const [equipmentName, setEquipmentName] = useState(null);
+  const [equipmentList, setEquipmentList] = useState([]);
+  const [alreadyExists, setAlreadyExists] = useState(false);
 
   const timer = React.useRef();
 
@@ -165,7 +168,16 @@ export const Equipments = () => {
     };
   }, []);
 
-  const handleFinishProcess = () => {
+  React.useEffect(() => {
+    if (!equipmentList.length) {
+      getAllEquipmentsApi().then((data) => {
+        setEquipmentList(data);
+      });
+    }
+  }, [equipmentList]);
+
+  const handleFinishProcess = (e) => {
+    e.preventDefault();
     if (!loading) {
       setSuccess(false);
       setLoading(true);
@@ -174,6 +186,9 @@ export const Equipments = () => {
         setLoading(false);
       }, 2000);
     }
+    console.log(equipmentName, chipData);
+
+    createEquipmentApi(equipmentName, chipData);
   };
 
   const handleClose = (newValue) => {
@@ -196,6 +211,19 @@ export const Equipments = () => {
   }, [equipmentName]);
 
   const handleNext = () => {
+    if (activeStep === 0) {
+      if (
+        equipmentList
+          .map(function (elem) {
+            return elem.name;
+          })
+          .includes(equipmentName)
+      ) {
+        setAlreadyExists(true);
+        return;
+      }
+      setAlreadyExists(false);
+    }
     if (activeStep === 1) {
       for (let i = 0; i < chipData.length; i++) {
         if (!chipData[i].type) {
@@ -243,12 +271,12 @@ export const Equipments = () => {
 
   function keyPress(e) {
     if (e.keyCode === 13) {
-      if(e.target.value === ""){
+      if (e.target.value === "") {
         return;
       }
       setChipData((chipData) => [
         ...chipData,
-        { key: chipData.length + 1, label: e.target.value, type: null },
+        { key: chipData.length + 1, label: e.target.value.trim(), type: null },
       ]);
     }
   }
@@ -347,7 +375,7 @@ export const Equipments = () => {
               id="standard-basic"
               label="Standard"
               onKeyDown={keyPress}
-              inputProps={{ maxLength: 20 }}
+              inputProps={{ maxLength: 100 }}
             />
             <br></br>
             {chipData.map((data) => {
@@ -379,7 +407,13 @@ export const Equipments = () => {
       case 2:
         return (
           <Grid item xs={12}>
-            <List subheader={<ListSubheader>Features - {chipData.length} in total</ListSubheader>}>
+            <List
+              subheader={
+                <ListSubheader>
+                  Features - {chipData.length} in total
+                </ListSubheader>
+              }
+            >
               {chipData.map((data) => {
                 return (
                   <ListItem divider className={classes.listItem}>
@@ -506,6 +540,16 @@ export const Equipments = () => {
           >
             <Alert onClose={handleAlertClose} severity="error">
               You need to choose a data type for each feature!
+            </Alert>
+          </Snackbar>
+          <Snackbar
+            open={alreadyExists}
+            autoHideDuration={6000}
+            onClose={handleAlertClose}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert onClose={handleAlertClose} severity="error">
+              Equipment already exists!
             </Alert>
           </Snackbar>
         </Paper>

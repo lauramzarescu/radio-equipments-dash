@@ -7,7 +7,7 @@ const path = require("path");
 
 // "electron-start": "cross-env NODE_ENV=dev nodemon --exec \"\"electron .\"\"",  FOR NODEMON RELOAD
 
-require("electron-reload");
+// require("electron-reload");
 
 function createWindow() {
   // Create the browser window.

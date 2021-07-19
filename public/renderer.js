@@ -5,7 +5,7 @@ html global `window` variable */
 
 // When document has loaded, initialise
 document.onreadystatechange = (event) => {
-    if (document.readyState == "complete") {
+    if (document.readyState === "complete") {
         handleWindowControls();
     }
 };
@@ -19,21 +19,21 @@ window.onbeforeunload = (event) => {
 
 function handleWindowControls() {
     // Make minimise/maximise/restore/close buttons work when they are clicked
-    document.getElementById('min-button').addEventListener("click", event => {
-        win.minimize();
-    });
+    // document.getElementById('min-button').addEventListener("click", event => {
+    //     win.minimize();
+    // });
 
-    document.getElementById('max-button').addEventListener("click", event => {
-        win.maximize();
-    });
+    // document.getElementById('max-button').addEventListener("click", event => {
+    //     win.maximize();
+    // });
 
-    document.getElementById('restore-button').addEventListener("click", event => {
-        win.unmaximize();
-    });
+    // document.getElementById('restore-button').addEventListener("click", event => {
+    //     win.unmaximize();
+    // });
 
-    document.getElementById('close-button').addEventListener("click", event => {
-        win.close();
-    });
+    // document.getElementById('close-button').addEventListener("click", event => {
+    //     win.close();
+    // });
 
     // Toggle maximise/restore buttons when maximisation/unmaximisation occurs
     toggleMaxRestoreButtons();

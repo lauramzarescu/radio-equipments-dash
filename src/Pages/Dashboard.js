@@ -33,6 +33,11 @@ import * as download from "../Animations/download.json";
 import ColorTheme from "../Theme/ThemeProvider";
 
 import CollapsibleTable from "./../Components/CollapsibleTable";
+import {
+  getNumberOfEquipmentsApi,
+  getNumberOfUploadsApi,
+  getLastUploadApi,
+} from "./../api/models";
 
 function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
@@ -103,12 +108,12 @@ const useStyles = makeStyles((theme) => ({
     alignItems: "center",
     width: "50%",
     backgroundColor: ColorTheme.palette.secondary.main,
-    transition: 'width 0.3s',
+    transition: "width 0.3s",
     boxShadow: "none",
-    '&:hover': {
-      width: '100%',
-      transition: 'width 0.3s',
-    }
+    "&:hover": {
+      width: "100%",
+      transition: "width 0.3s",
+    },
   },
   inputSearchBar: {
     marginLeft: theme.spacing(1),
@@ -130,6 +135,33 @@ export const Dashboard = () => {
   const [open, setOpen] = React.useState(false);
   const [downloadAnimation, setDownloadAnimation] = useState(false);
   const [animationComplete, setAnimationComplete] = useState(false);
+  const [numberOfEquipments, setNumberOfEquipments] = useState(null);
+  const [numberOfUploads, setNumberOfUploads] = useState(null);
+  const [lastUpload, setLastUpload] = useState(null);
+
+  useEffect(() => {
+    if (!numberOfEquipments) {
+      getNumberOfEquipmentsApi().then((data) => {
+        setNumberOfEquipments(data[0]["count(*)"]);
+      });
+    }
+    if (!numberOfUploads) {
+      getNumberOfUploadsApi().then((data) => {
+        setNumberOfUploads(data[0]["count(*)"]);
+      });
+    }
+    if (!lastUpload) {
+      getLastUploadApi().then((data) => {
+        setLastUpload(
+          data[0]["created_date"]
+            .replace(/T|Z/gi, function (x) {
+              return " ";
+            })
+            .slice(0, -5)
+        );
+      });
+    }
+  }, [numberOfEquipments, numberOfUploads, lastUpload]);
 
   useEffect(() => {
     console.log("active download: ", activeDownload);
@@ -163,7 +195,7 @@ export const Dashboard = () => {
       return;
     }
 
-    setDownloadAnimation(true)
+    setDownloadAnimation(true);
     setOpen(false);
   };
 
@@ -189,17 +221,17 @@ export const Dashboard = () => {
     {
       label: "Number of equipments",
       icon: getAnimationSettings(features),
-      data: 10,
+      data: numberOfEquipments,
     },
     {
       label: "Number of uploads",
       icon: getAnimationSettings(uploads),
-      data: 28,
+      data: numberOfUploads,
     },
     {
       label: "Last upload data",
       icon: getAnimationSettings(last_upload),
-      data: "2 hours ago",
+      data: lastUpload,
     },
     {
       label: "Number of activities",
@@ -338,7 +370,9 @@ export const Dashboard = () => {
                       </Typography>
                     );
                   })
-                : downloads.length ? "Updating recent downloads..." : "No recent downloads"}
+                : downloads.length
+                ? "Updating recent downloads..."
+                : "No recent downloads"}
             </Typography>
           </Paper>
         </Grid>
@@ -360,11 +394,7 @@ export const Dashboard = () => {
             onClose={handleAlertClose}
             severity="success"
             action={
-              <Button
-                color="inherit"
-                size="small"
-                onClick={handleAlertClose}
-              >
+              <Button color="inherit" size="small" onClick={handleAlertClose}>
                 OK
               </Button>
             }

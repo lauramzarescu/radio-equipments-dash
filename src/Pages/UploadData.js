@@ -13,13 +13,19 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 
-import AddIcon from '@material-ui/icons/Add';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import AllInboxIcon from '@material-ui/icons/AllInbox';
+import AddIcon from "@material-ui/icons/Add";
+import CloudUploadIcon from "@material-ui/icons/CloudUpload";
+import AllInboxIcon from "@material-ui/icons/AllInbox";
 
 import * as XLSX from "xlsx";
 
 import ColorTheme from "../Theme/ThemeProvider";
+
+import {
+  getAllEquipmentsApi,
+  getEquipmentFeaturesApi,
+  uploadDataToEquipmentApi,
+} from "./../api/models";
 
 const useStyles = makeStyles((theme) => ({
   gridContainer: {
@@ -53,88 +59,136 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(1),
     minWidth: 200,
     color: ColorTheme.palette.primary.neutralButton,
-    display: "none"
+    display: "none",
   },
   selectInput: {
-    borderColor: ColorTheme.palette.primary.neutralButton
+    borderColor: ColorTheme.palette.primary.neutralButton,
   },
 }));
 
 export const UploadData = () => {
   const classes = useStyles();
 
-  const [rows, setRows] = useState([]);
-  const [openAlert, setOpenAlert] = useState(false);
-  const [openSelect, setOpenSelect] = React.useState(false);
-  const [equipmentSelected, setEquipmentSelected] = useState("");
-  const [columns, setColumns] = useState([
-    {
-      field: "ora",
-      headerName: "Ora",
-      width: 100,
-      sortable: true,
-    },
-    {
-      field: "frecventa",
-      headerName: "Frecventa (MHz)",
-      width: 200,
-    },
-    {
-      field: "nr_mas",
-      headerName: "Nr. de masuratori",
-      width: 200,
-    },
-    {
-      field: "azimut",
-      headerName: "Azimut",
-      width: 130,
-    },
-    {
-      field: "confidenta",
-      headerName: "Confidenta (0-99)",
-      width: 200,
-    },
-    {
-      field: "niv_mas",
-      headerName: "Nivel masurat (-10 pana la -130)",
-      width: 280,
-    },
-    {
-      field: "lat_n",
-      headerName: "Latitudine N",
-      width: 160,
-    },
-    {
-      field: "lat_e",
-      headerName: "Latitudine E",
-      width: 160,
-    },
-  ]);
-
-  const hardcoded_equipments = ["Echipament 1", "Echipament 2", "Echipament 3"];
+  const [rows, setRows] = useState([]);                           //randurile tabelului
+  const [openAlert, setOpenAlert] = useState(false);              //variabila pentru deschiderea erorii
+  const [uploadSuccess, setUploadSuccess] = useState(false);      //upload-ul a fost facut cu succes
+  const [openSelect, setOpenSelect] = React.useState(false);      // deschidem explorer-ul pentru selectarea fisierului
+  const [equipmentSelected, setEquipmentSelected] = useState(""); // echipamentul selectat
+  const [equipmentsList, setEquipmentsList] = useState([]);       // lista tuturor echipamentelor
+  const [columns, setColumns] = useState([]);                     //coloanele tabelului
+  const [uploadedFile, setUploadedFile] = useState(null);         //fisierul incarcat
+  const [fileRecords, setFileRecords] = useState(0);              // randurile fisierului
+  const [headers, setHeaders] = useState([]);                     // caracteristicile fisierului
+  const [headersNotMatch, setHeadersNotMatch] = useState(false);  // verificam daca caracteristicile fisierului
+                                                                  // se potrivesc cu cele ale echipamentului
 
   useEffect(() => {
-    const data = JSON.parse(sessionStorage.getItem('currentUploadFile'));
-    console.log(data)
-    if (data !== null) {
-      setFileUploaded(data);
+    if (!equipmentsList.length) {
+      getAllEquipmentsApi().then((data) => {
+        setEquipmentsList(data);
+      });
     }
-  }, []);
+    console.log(equipmentsList);
+  }, [equipmentsList]);
+
+  useEffect(() => {
+    console.log(uploadedFile);
+  }, [uploadedFile]);
 
   const selectEquipment = (event) => {
     setEquipmentSelected(event.target.value);
+    setColumns([]);
     setOpenAlert(false);
   };
 
+  useEffect(() => {
+    console.log(columns);
+    if (!columns.length) {
+      getEquipmentFeaturesApi(equipmentSelected).then((data) => {
+        let arr = [];
+        if (data[0]) {
+          data[0].features.forEach((column) => {
+            if (
+              column.label !== "id" &&
+              column.label !== "created_date" &&
+              column.label !== "batch"
+            ) {
+              let obj = {
+                field: column.label,
+                headerName: column.label,
+                width: 150,
+                sortable: true,
+              };
+              arr.push(obj);
+            }
+          });
+          console.log(arr);
+          setColumns(arr);
+        }
+      });
+    }
+  }, [equipmentSelected, columns]);
+
+  useEffect(() => {
+    console.log(headers);
+  }, [headers]);
+
   function UploadFileToDatabase() {
-    sessionStorage.removeItem('currentUploadFile');
-    setRows([]);
-    setColumns([]);
+    if (checkSelectedFileHeaders()) {
+      let formData = new FormData();
+      formData.append("file", uploadedFile, uploadedFile.name);
+      formData.append("equipment", equipmentSelected);
+      formData.append("records", fileRecords);
+      uploadDataToEquipmentApi(formData);
+      setUploadSuccess(true);
+      setRows([]);
+      setColumns([]);
+      setHeadersNotMatch(false);
+    } 
+  }
+
+  function checkSelectedFileHeaders() {
+    let temp_columns = [];
+
+    for (let i = 0; i < columns.length; i++) {
+      temp_columns.push(columns[i].headerName);
+    }
+
+    if (temp_columns.length !== headers.length) {
+      setHeadersNotMatch(true);
+      return false;
+    }
+
+    console.log(temp_columns)
+    console.log(headers)
+
+    for (let j = 0; j < temp_columns.length; j++) {
+      if (temp_columns[j].trim().localeCompare(headers[j].trim()) !== 0) {
+        console.log(j, temp_columns[j].trim(), headers[j].trim())
+        console.log("merge")
+        setHeadersNotMatch(true);
+        return false;
+      }
+    }
+    
+
+    setHeadersNotMatch(false);
+    return true;
   }
 
   function setFileUploaded(data) {
     var counter = 0;
     var data_rows = [];
+
+    setFileRecords(data.length);
+
+    let file_headers = [];
+
+    for (let ii = 0; ii < data[0].length; ii++) {
+      file_headers.push(data[0][ii]);
+    }
+
+    setHeaders(file_headers);
 
     for (let i = 1; i < data.length; i++) {
       data_rows.push({
@@ -147,7 +201,7 @@ export const UploadData = () => {
       }
       counter++;
     }
-
+    console.log(data_rows);
     setRows(data_rows);
   }
 
@@ -167,6 +221,14 @@ export const UploadData = () => {
     setOpenSelect(false);
   };
 
+  const handleSuccessClose = () => {
+    setUploadSuccess(false);
+  };
+
+  const handleHeadersMatchClose = () => {
+    setHeadersNotMatch(false);
+  };
+
   const handleSelectBoxOpen = () => {
     setOpenSelect(true);
   };
@@ -182,10 +244,11 @@ export const UploadData = () => {
 
     var files = e.target.files;
     var f = files[0];
+    setUploadedFile(f);
     var reader = new FileReader();
     reader.onload = function (e) {
       var data = e.target.result;
-      let readedData = XLSX.read(data, { type: "binary" });
+      let readedData = XLSX.read(data, { type: "binary", cellDates: true });
       const wsname = readedData.SheetNames[0];
       const ws = readedData.Sheets[wsname];
 
@@ -210,16 +273,21 @@ export const UploadData = () => {
           justify="center"
         >
           <Button
-              variant="outlined"
-              className={classes.buttonBack}
-              onClick={handleSelectBoxOpen}
-              startIcon={<AllInboxIcon />}
-            >
-              {equipmentSelected || "Select equipment"}
-            </Button>
-            
+            variant="outlined"
+            className={classes.buttonBack}
+            onClick={handleSelectBoxOpen}
+            startIcon={<AllInboxIcon />}
+          >
+            {equipmentSelected || "Select equipment"}
+          </Button>
+
           <FormControl variant="outlined" className={classes.formControl}>
-            <InputLabel id="demo-simple-select-label" className={classes.selectInput}>Equipment</InputLabel>
+            <InputLabel
+              id="demo-simple-select-label"
+              className={classes.selectInput}
+            >
+              Equipment
+            </InputLabel>
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select-outlined"
@@ -233,10 +301,12 @@ export const UploadData = () => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              {hardcoded_equipments.map((data, index) => {
+              {equipmentsList.map((data, index) => {
                 return (
-                  <MenuItem key={index} value={data}>{data}</MenuItem>
-                )
+                  <MenuItem key={index} value={data.name}>
+                    {data.name}
+                  </MenuItem>
+                );
               })}
             </Select>
           </FormControl>
@@ -289,6 +359,26 @@ export const UploadData = () => {
           >
             <Alert onClose={handleAlertClose} severity="error">
               You need to select an equipment first!
+            </Alert>
+          </Snackbar>
+          <Snackbar
+            open={uploadSuccess}
+            autoHideDuration={6000}
+            onClose={handleSuccessClose}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert onClose={handleSuccessClose} severity="success">
+              Your file was uploaded successfully!
+            </Alert>
+          </Snackbar>
+          <Snackbar
+            open={headersNotMatch}
+            autoHideDuration={6000}
+            onClose={handleHeadersMatchClose}
+            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          >
+            <Alert onClose={handleHeadersMatchClose} severity="error">
+              The equipment selected does not match with the uploaded file!
             </Alert>
           </Snackbar>
         </Grid>

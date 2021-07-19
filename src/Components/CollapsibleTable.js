@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { makeStyles } from "@material-ui/core/styles";
 import Box from "@material-ui/core/Box";
@@ -20,6 +20,16 @@ import ColorTheme from "./../Theme/ThemeProvider";
 
 import GetAppIcon from "@material-ui/icons/GetApp";
 import { JsonToCsv, useJsonToCsv } from "react-json-csv";
+import axios from "axios";
+
+import {
+  getTableSimpleDataApi,
+  getUploadsApi,
+  downloadFileApi,
+  getLastWeekApi,
+} from "./../api/models";
+
+const FileDownload = require("js-file-download");
 
 const useRowStyles = makeStyles({
   root: {
@@ -36,10 +46,16 @@ const useRowStyles = makeStyles({
   },
 });
 
-function createData(name, features, uploads, last_upload, last_week) {
+function createData(id, name, features, uploads, last_upload) {
   let active = null;
 
-  if (last_week >= 10) {
+  let lastWeek = 4;
+  // getLastWeekApi(id).then((data) => {
+  //   lastWeek = data[0].count;
+  //   console.log(lastWeek)
+  // });
+
+  if (lastWeek >= 10) {
     active = (
       <Chip
         label="High usage"
@@ -50,7 +66,8 @@ function createData(name, features, uploads, last_upload, last_week) {
         }}
       />
     );
-  } else if (last_week < 10 && last_week >= 5) {
+  }
+  if (lastWeek < 10 && lastWeek >= 5) {
     active = (
       <Chip
         label="Medium usage"
@@ -61,7 +78,8 @@ function createData(name, features, uploads, last_upload, last_week) {
         }}
       />
     );
-  } else {
+  }
+  if (lastWeek > 0 && lastWeek < 5) {
     active = (
       <Chip
         label="Low usage"
@@ -73,88 +91,114 @@ function createData(name, features, uploads, last_upload, last_week) {
       />
     );
   }
+
+  if (lastWeek === 0) {
+    active = (
+      <Chip
+        label="No usage"
+        variant="outlined"
+        style={{
+          borderColor: ColorTheme.palette.primary.errorButton,
+          color: ColorTheme.palette.primary.errorButton,
+        }}
+      />
+    );
+  }
+  let uploads_list = [];
+
+  getUploadsApi(id).then((data) => {
+    data.forEach((upload) => {
+      uploads_list.push({
+        download_location: upload.aws_location,
+        name: upload.aws_location.substring(
+          upload.aws_location.lastIndexOf("/") + 1,
+          upload.aws_location.length
+        ),
+        records: upload.file_records,
+        datetime: upload.created_date
+          ? upload.created_date
+              .replace(/T|Z/gi, function (x) {
+                return " ";
+              })
+              .slice(0, -5)
+          : null,
+      });
+    });
+  });
+
   return {
     name,
     features,
     uploads,
     last_upload,
     active,
-    feature_list: [
-      { name: "EQ1_upload", records: "1009", datetime: "01-04-2021" },
-      { name: "EQ1_upload_test", records: "786", datetime: "01-04-2021" },
-    ],
+    feature_list: uploads_list,
   };
 }
 
-const filename = "Csv-file",
-  fields = {
-    index: "Index",
-    guid: "GUID",
-  },
-  style = {
-    padding: "5px",
-  },
-  data = [
-    { index: 0, guid: "asdf231234" },
-    { index: 1, guid: "wetr2343af" },
-  ],
-  text = "Convert Json to Csv";
-
 function Row({ row, setActive, setDownloads, downloads }) {
-  // const { row } = props.row;
   const setActiveDownload = setActive;
   const [open, setOpen] = React.useState(false);
+
   const classes = useRowStyles();
 
-  const { saveAsCsv } = useJsonToCsv();
-
-  function handleExcelConvertButton(e, upload) {
+  function handleExcelConvertButton(e, file, equipment) {
     e.preventDefault();
-    saveAsCsv({ data, fields, filename });
-    setActiveDownload(true);
-    setDownloads([...downloads, upload]);
+    downloadFileApi(file, equipment).then((data) => {
+      const link = document.createElement("a");
+      link.href = data;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setActiveDownload(true);
+      setDownloads([...downloads, file]);
+    });
   }
 
   const setDownloadsHelper = (filename) => {
-    console.log(filename)
+    console.log(filename);
     setDownloads([...filename]);
-  }
+  };
 
   return (
     <React.Fragment>
       <TableRow className={classes.root}>
         <TableCell>
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-          </IconButton>
+          {row.uploads ? (
+            <IconButton
+              aria-label="expand row"
+              size="small"
+              onClick={() => setOpen(!open)}
+            >
+              {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+            </IconButton>
+          ) : null}
         </TableCell>
         <TableCell component="th" scope="row">
           {row.name}
         </TableCell>
-        <TableCell align="right">{row.features}</TableCell>
-        <TableCell align="right">{row.uploads}</TableCell>
-        <TableCell align="right">
-          {row.last_upload}
-          <Tooltip title={"Get latest upload from " + row.name}>
-            <IconButton
-              aria-label="delete"
-              style={{
-                color: ColorTheme.palette.primary.activeButtonText,
-              }}
-              size="medium"
-              onClick={(e) => {
-                handleExcelConvertButton(e, "test");
-              }}
-            >
-              <GetAppIcon fontSize="inherit" />
-            </IconButton>
-          </Tooltip>
+        <TableCell align="center">{row.features}</TableCell>
+        <TableCell align="center">{row.uploads}</TableCell>
+        <TableCell align="center">
+          {row.last_upload ?? "Not available"}
+          {row.last_upload ? (
+            <Tooltip title={"Get latest upload from " + row.name}>
+              <IconButton
+                aria-label="delete"
+                style={{
+                  color: ColorTheme.palette.primary.activeButtonText,
+                }}
+                size="medium"
+                onClick={(e) => {
+                  handleExcelConvertButton(e, "test");
+                }}
+              >
+                <GetAppIcon fontSize="inherit" />
+              </IconButton>
+            </Tooltip>
+          ) : null}
         </TableCell>
-        <TableCell align="right">{row.active}</TableCell>
+        <TableCell align="center">{row.active}</TableCell>
       </TableRow>
       <TableRow>
         <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
@@ -198,7 +242,11 @@ function Row({ row, setActive, setDownloads, downloads }) {
                             }}
                             size="medium"
                             onClick={(e) => {
-                              handleExcelConvertButton(e, feature_listRow.name);
+                              handleExcelConvertButton(
+                                e,
+                                feature_listRow.name,
+                                row.name
+                              );
                             }}
                           >
                             <GetAppIcon fontSize="inherit" />
@@ -217,16 +265,45 @@ function Row({ row, setActive, setDownloads, downloads }) {
   );
 }
 
-const rows = [
-  createData("Echipament 1", 159, 6.0, "2020-01-05", 4),
-  createData("Echipament 2", 237, 9.0, "2020-01-05", 10),
-  createData("Echipament 3", 262, 16.0, "2020-01-05", 6),
-  createData("Echipament 4", 305, 3.7, "2020-01-05", 12),
-  createData("Echipament 5", 356, 16.0, "2020-01-05", 9),
-];
-
-export default function CollapsibleTable({ setActive, setDownloads, downloads }) {
+export default function CollapsibleTable({
+  setActive,
+  setDownloads,
+  downloads,
+}) {
   const classes = useRowStyles();
+  const [rows, setRows] = useState([]);
+
+  useEffect(() => {
+    if (!rows.length) {
+      getTableSimpleDataApi().then((data) => {
+        const data_rows = [];
+        data.forEach((equipment) => {
+          console.log(equipment);
+          // getLastWeekApi(equipment.id).then((res) => {
+          //   // lastWeek = data[0].count;
+          //   console.log(res[0].count);
+          // });
+          data_rows.push(
+            createData(
+              equipment.id,
+              equipment.name,
+              equipment.number_of_features,
+              equipment.number_of_uploads,
+              equipment.created_date
+                ? equipment.created_date
+                    .replace(/T|Z/gi, function (x) {
+                      return " ";
+                    })
+                    .slice(0, -5)
+                : null
+            )
+          );
+        });
+        setRows(data_rows);
+        console.log(data_rows);
+      });
+    }
+  }, [rows]);
 
   return (
     <TableContainer component={Paper}>
@@ -235,16 +312,16 @@ export default function CollapsibleTable({ setActive, setDownloads, downloads })
           <TableRow>
             <TableCell />
             <TableCell className={classes.header}>Equipment name</TableCell>
-            <TableCell align="right" className={classes.header}>
+            <TableCell align="center" className={classes.header}>
               Number of features
             </TableCell>
-            <TableCell align="right" className={classes.header}>
+            <TableCell align="center" className={classes.header}>
               Number of uploads
             </TableCell>
-            <TableCell align="right" className={classes.header}>
+            <TableCell align="center" className={classes.header}>
               Last upload
             </TableCell>
-            <TableCell align="right" className={classes.header}>
+            <TableCell align="center" className={classes.header}>
               State
             </TableCell>
           </TableRow>
